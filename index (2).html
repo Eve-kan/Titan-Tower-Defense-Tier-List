@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Tier List | Tier List</title>
+    <style>
+        :root {
+            --bg-darker: #0d0d0d;
+            --bg-card: #141414;
+            --accent: #3b82f6;
+            --rainbow: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8b00ff);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-darker);
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* WELCOME */
+        #welcome-page {
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; height: 100vh; text-align: center; gap: 16px;
+        }
+        .badge-design { background: rgba(59,130,246,0.15); color: #3b82f6; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: inline-block; }
+        .badge-build  { background: rgba(168,85,247,0.15); color: #a855f7; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; display: inline-block; }
+        .welcome-title { font-size: 3.5rem; letter-spacing: -2px; }
+        .welcome-btn { margin-top: 10px; padding: 15px 40px; border-radius: 8px; border: none; background: var(--accent); color: white; font-weight: bold; cursor: pointer; font-size: 1rem; transition: 0.3s; }
+        .welcome-btn:hover { background: #2563eb; }
+
+        /* MAIN */
+        #main-page { display: none; width: 100%; max-width: 1150px; padding: 20px; }
+        .top-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+        .search-box { flex: 1; padding: 13px 16px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; color: white; font-size: 0.95rem; outline: none; transition: border 0.2s; }
+        .search-box:focus { border-color: var(--accent); }
+        .admin-toggle-btn { padding: 13px 18px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #aaa; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s; white-space: nowrap; display: none; }
+        .admin-toggle-btn.visible { display: block; }
+        .admin-toggle-btn:hover { border-color: #a855f7; color: #a855f7; }
+        .admin-toggle-btn.open { border-color: #a855f7; color: #a855f7; background: rgba(168,85,247,0.1); }
+
+        /* FILTER GROUPS */
+        .filter-group { margin-bottom: 12px; }
+        .filter-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #a855f7;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .filter-label span { color: #555; font-weight: 400; }
+        .filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .filter-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #888;
+            padding: 7px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .filter-btn:hover { border-color: #444; color: #bbb; }
+
+        /* Rarity active colors */
+        .filter-btn.active-all        { background: var(--accent); color: white; border-color: var(--accent); }
+        .filter-btn.active-legendary  { background: #f59e0b; color: #111; border-color: #f59e0b; }
+        .filter-btn.active-mythic     { background: #a855f7; color: white; border-color: #a855f7; }
+        .filter-btn.active-secret     { background: #ec4899; color: white; border-color: #ec4899; }
+
+        /* Rank active colors */
+        .filter-btn.active-rank-all   { background: var(--accent); color: white; border-color: var(--accent); }
+        .filter-btn.active-rank-sss   { background: var(--rainbow); background-size: 300%; animation: move 3s linear infinite; color: white; border-color: transparent; }
+        .filter-btn.active-rank-s     { background: #ffd700; color: #111; border-color: #ffd700; }
+        .filter-btn.active-rank-a     { background: #a855f7; color: white; border-color: #a855f7; }
+        .filter-btn.active-rank-b     { background: #22c55e; color: white; border-color: #22c55e; }
+        .filter-btn.active-rank-c     { background: #64748b; color: white; border-color: #64748b; }
+
+        /* Rarity badge on card */
+        .rarity-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 3px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .rarity-legendary { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .rarity-mythic    { background: rgba(168,85,247,0.2); color: #a855f7; border: 1px solid #a855f7; }
+        .rarity-secret    { background: rgba(236,72,153,0.2); color: #ec4899; border: 1px solid #ec4899; }
+
+        /* CARDS */
+        .value-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+        @media (max-width: 900px) { .value-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 600px) { .value-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 380px) { .value-grid { grid-template-columns: 1fr; } }
+
+        .card { background: var(--bg-card); border: 1px solid #1e1e1e; border-radius: 10px; padding: 12px; text-align: center; transition: transform 0.2s, border-color 0.2s; }
+        .card:hover { transform: translateY(-2px); border-color: #333; }
+        .img-placeholder { height: 85px; background: #252525; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; color: #444; font-size: 0.7rem; overflow: hidden; }
+        .img-placeholder img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+        .tower-name { font-weight: bold; font-size: 0.88rem; margin-bottom: 4px; }
+
+        .tier-tag { font-size: 0.7rem; font-weight: 900; padding: 4px 8px; border-radius: 4px; margin: 6px 0; text-transform: uppercase; color: white; display: block; }
+        .tier-sss { background: var(--rainbow); background-size: 300%; animation: move 3s linear infinite; }
+        .tier-s   { background: #ffd700; color: #111; }
+        .tier-a   { background: #a855f7; }
+        .tier-b   { background: #22c55e; }
+        .tier-c   { background: #64748b; }
+        @keyframes move { 0%{background-position:0%} 100%{background-position:100%} }
+
+        .stats { background: #111; padding: 9px 10px; border-radius: 5px; font-size: 0.78rem; text-align: left; margin-top: 6px; }
+        .stat-row { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; gap: 4px; }
+        .stat-label { color: #666; flex-shrink: 0; }
+        .stat-value { color: #3b82f6; font-weight: 600; flex: 1; text-align: right; margin-right: 5px; }
+        .rank-badge { font-size: 0.6rem; font-weight: 900; padding: 2px 5px; border-radius: 3px; color: white; flex-shrink: 0; min-width: 22px; text-align: center; }
+        .rank-sss { background: var(--rainbow); background-size: 300%; animation: move 3s linear infinite; }
+        .rank-s   { background: #ffd700; color: #111; }
+        .rank-a   { background: #a855f7; }
+        .rank-b   { background: #22c55e; }
+        .rank-c   { background: #64748b; }
+
+        /* ADMIN PANEL */
+        #admin-panel { display: none; background: #111; border: 1px solid #2a2a2a; border-radius: 12px; padding: 24px; margin-bottom: 28px; }
+        #admin-panel.open { display: block; }
+        .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .admin-header h2 { font-size: 1.1rem; color: #a855f7; }
+        .admin-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn-add  { padding: 8px 16px; background: rgba(34,197,94,0.15); border: 1px solid #22c55e; color: #22c55e; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: 0.2s; }
+        .btn-add:hover  { background: rgba(34,197,94,0.25); }
+        .btn-copy { padding: 8px 16px; background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; color: #3b82f6; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: 0.2s; }
+        .btn-copy:hover { background: rgba(59,130,246,0.25); }
+        .admin-table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        thead th { text-align: left; padding: 10px 8px; color: #555; font-weight: 600; border-bottom: 1px solid #1e1e1e; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid #1a1a1a; }
+        tbody tr:hover { background: #161616; }
+        tbody td { padding: 7px 7px; vertical-align: middle; }
+        .admin-input { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px; color: white; padding: 5px 8px; font-size: 0.8rem; width: 100%; outline: none; transition: border 0.15s; }
+        .admin-input:focus { border-color: var(--accent); }
+        .admin-select { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 5px; color: white; padding: 5px 7px; font-size: 0.8rem; outline: none; width: 100%; cursor: pointer; }
+        .btn-del { background: rgba(239,68,68,0.12); border: 1px solid #ef4444; color: #ef4444; border-radius: 5px; cursor: pointer; padding: 4px 9px; font-size: 0.78rem; transition: 0.2s; white-space: nowrap; }
+        .btn-del:hover { background: rgba(239,68,68,0.25); }
+
+        /* PASSWORD MODAL */
+        .pw-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000; justify-content: center; align-items: center; }
+        .pw-overlay.visible { display: flex; }
+        .pw-box { background: #141414; border: 1px solid #2a2a2a; border-radius: 14px; padding: 36px 30px; width: 340px; text-align: center; }
+        .pw-box h3 { color: #a855f7; font-size: 1.05rem; margin-bottom: 8px; }
+        .pw-box p  { color: #555; font-size: 0.82rem; margin-bottom: 20px; }
+        .pw-field { width: 100%; padding: 11px 14px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 7px; color: white; font-size: 0.9rem; outline: none; margin-bottom: 12px; transition: border 0.2s; }
+        .pw-field:focus { border-color: #a855f7; }
+        .pw-submit { width: 100%; padding: 11px; background: #a855f7; border: none; border-radius: 7px; color: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; }
+        .pw-submit:hover { background: #9333ea; }
+        .pw-cancel { margin-top: 10px; background: none; border: none; color: #444; font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+        .pw-cancel:hover { color: #777; }
+        .pw-err { color: #ef4444; font-size: 0.8rem; margin-top: 10px; min-height: 18px; }
+
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #22c55e; color: white; padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; opacity: 0; transform: translateY(10px); transition: 0.3s; z-index: 999; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        footer { margin-top: 50px; padding: 30px; border-top: 1px solid #1a1a1a; color: #444; font-size: 0.78rem; text-align: center; line-height: 1.8; width: 100%; }
+    </style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div id="welcome-page">
+    <div>
+        <div class="badge-design">Designed by Eve</div>
+        &nbsp;
+        <div class="badge-build">Built by Kayra &amp; Eve</div>
+    </div>
+    <h1 class="welcome-title">TIER LIST</h1>
+    <button class="welcome-btn" onclick="openSite()">VIEW LIST</button>
+</div>
+
+<!-- MAIN -->
+<div id="main-page">
+    <div class="top-bar">
+        <input type="text" class="search-box" id="sBox" placeholder="Search tower name..." oninput="applySearch()">
+        <button class="admin-toggle-btn" id="adminToggleBtn" onclick="toggleAdminPanel()">&#9881; Edit Towers</button>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="admin-panel">
+        <div class="admin-header">
+            <h2>&#9881; Tower Editor</h2>
+            <div class="admin-actions">
+                <button class="btn-add" onclick="addTower()">+ Add Tower</button>
+                <button class="btn-copy" onclick="copyData()">Copy Data</button>
+            </div>
+        </div>
+        <div class="admin-table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tower Name</th>
+                        <th>Rarity</th>
+                        <th>Tier</th>
+                        <th>DPS</th>
+                        <th>DPS Rank</th>
+                        <th>Damage</th>
+                        <th>Dmg Rank</th>
+                        <th>Range</th>
+                        <th>Rng Rank</th>
+                        <th>Photo</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="admin-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- RARITY FILTER -->
+    <div class="filter-group">
+        <div class="filter-label">&#9670; Rarity Filter</div>
+        <div class="filter-row" id="rarity-row">
+            <button class="filter-btn active-all"       onclick="setRarity('ALL', this)">All</button>
+            <button class="filter-btn"                  onclick="setRarity('Legendary', this)">Legendary</button>
+            <button class="filter-btn"                  onclick="setRarity('Mythic', this)">Mythic</button>
+            <button class="filter-btn"                  onclick="setRarity('Secret', this)">Secret</button>
+        </div>
+    </div>
+
+    <!-- RANK FILTER -->
+    <div class="filter-group" style="margin-bottom: 28px;">
+        <div class="filter-label">&#9670; Rank Filter</div>
+        <div class="filter-row" id="rank-row">
+            <button class="filter-btn active-rank-all"  onclick="setRank('ALL', this)">All</button>
+            <button class="filter-btn"                  onclick="setRank('SSS', this)">SSS</button>
+            <button class="filter-btn"                  onclick="setRank('S', this)">S</button>
+            <button class="filter-btn"                  onclick="setRank('A', this)">A</button>
+            <button class="filter-btn"                  onclick="setRank('B', this)">B</button>
+            <button class="filter-btn"                  onclick="setRank('C', this)">C</button>
+        </div>
+    </div>
+
+    <div class="value-grid" id="grid"></div>
+
+    <footer>
+        <strong>Tower Tier List System</strong><br>
+        Design Concept: Eve &nbsp;|&nbsp; Development: Kayra &amp; Rodex<br>
+        &copy; 2026 All Rights Reserved.
+    </footer>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div class="pw-overlay" id="pw-overlay">
+    <div class="pw-box">
+        <h3>&#128274; Admin Girisi</h3>
+        <p>Duzenleme paneline erisim icin sifre gereklidir.</p>
+        <input type="password" class="pw-field" id="pw-input" placeholder="Sifre..."
+            onkeydown="if(event.key==='Enter') checkPassword()">
+        <button class="pw-submit" onclick="checkPassword()">Giris Yap</button><br>
+        <button class="pw-cancel" onclick="closePasswordModal()">Iptal</button>
+        <div class="pw-err" id="pw-err"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// KULE VERILERI
+// ============================================
+let kuleler = [
+    { ad: "Slotman (highroller)",   rarity: "Secret",    tier: "SSS", dps: "45,000", dpsRank: "SSS", damage: "12,000", dmgRank: "SSS", range: "55", rngRank: "S",   foto: "" },
+    { ad: "Clock Woman (future)",   rarity: "Secret",    tier: "SSS", dps: "38,000", dpsRank: "SSS", damage: "9,500",  dmgRank: "S",   range: "60", rngRank: "SSS", foto: "" },
+    { ad: "Titan Grill (full gas)", rarity: "secret",    tier: "SSS", dps: "42,000", dpsRank: "SSS", damage: "11,000", dmgRank: "SSS", range: "50", rngRank: "A",   foto: "" },
+    { ad: "unnamed",                   rarity: "secret", tier: "S",   dps: "28,000", dpsRank: "S",   damage: "7,500",  dmgRank: "S",   range: "45", rngRank: "B",   foto: "" },
+    { ad: "enhanced tv man",         rarity: "secret", tier: "A",   dps: "18,000", dpsRank: "A",   damage: "5,000",  dmgRank: "A",   range: "40", rngRank: "A",   foto: "" }
+];
+
+// Eksik yerleri doldur
+const rarities  = ["Secret","Mythic","Legendary"];
+const tierOrder = ["SSS","S","A","B","C"];
+while (kuleler.length < 25) {
+    var t = tierOrder[Math.floor(kuleler.length / 5)] || "C";
+    var r = rarities[Math.floor(Math.random() * rarities.length)];
+    kuleler.push({ ad: "Unnamed " + t + " Tower", rarity: r, tier: t, dps: "???", dpsRank: t, damage: "???", dmgRank: t, range: "???", rngRank: t, foto: "" });
+}
+
+// ============================================
+// ADMIN SIFRESI
+// ============================================
+const ADMIN_PASSWORD = "eveandkayraandporaxandzerothraggand09090909";
+// ============================================
+
+let activeRarity = "ALL";
+let activeRank   = "ALL";
+let adminUnlocked = false;
+
+function openSite() {
+    document.getElementById("welcome-page").style.display = "none";
+    document.getElementById("main-page").style.display = "block";
+    renderGrid();
+}
+
+// ---- RANK BADGE ----
+function rankBadge(r) {
+    return "<span class='rank-badge rank-" + r.toLowerCase() + "'>" + r + "</span>";
+}
+
+// ---- RARITY BADGE ----
+function rarityBadge(r) {
+    return "<span class='rarity-badge rarity-" + r.toLowerCase() + "'>" + r + "</span>";
+}
+
+// ---- GRID ----
+function renderGrid() {
+    var grid = document.getElementById("grid");
+    var searchVal = document.getElementById("sBox").value.toLowerCase();
+    grid.innerHTML = kuleler.map(function(k) {
+        var rarityOk = activeRarity === "ALL" || k.rarity === activeRarity;
+        var rankOk   = activeRank   === "ALL" || k.tier   === activeRank;
+        var searchOk = !searchVal   || k.ad.toLowerCase().includes(searchVal);
+        var vis = (rarityOk && rankOk && searchOk) ? "block" : "none";
+        var imgHtml = k.foto
+            ? "<img src='" + k.foto + "' alt='" + esc(k.ad) + "' onerror=\"this.parentElement.innerText='IMAGE'\">"
+            : "IMAGE";
+        return "<div class='card' data-t='" + k.tier + "' data-r='" + k.rarity + "' style='display:" + vis + "'>"
+            + "<div class='img-placeholder'>" + imgHtml + "</div>"
+            + rarityBadge(k.rarity)
+            + "<div class='tower-name'>" + k.ad + "</div>"
+            + "<div class='tier-tag tier-" + k.tier.toLowerCase() + "'>" + k.tier + " TIER</div>"
+            + "<div class='stats'>"
+            + "<div class='stat-row'><span class='stat-label'>DPS</span><span class='stat-value'>" + k.dps + "</span>" + rankBadge(k.dpsRank) + "</div>"
+            + "<div class='stat-row'><span class='stat-label'>Damage</span><span class='stat-value'>" + k.damage + "</span>" + rankBadge(k.dmgRank) + "</div>"
+            + "<div class='stat-row'><span class='stat-label'>Range</span><span class='stat-value'>" + k.range + "</span>" + rankBadge(k.rngRank) + "</div>"
+            + "</div></div>";
+    }).join("");
+}
+
+// ---- FILTERS ----
+function setRarity(val, btn) {
+    activeRarity = val;
+    document.querySelectorAll("#rarity-row .filter-btn").forEach(function(b) {
+        b.className = "filter-btn";
+    });
+    var cls = val === "ALL" ? "active-all" : "active-" + val.toLowerCase();
+    btn.classList.add(cls);
+    renderGrid();
+}
+
+function setRank(val, btn) {
+    activeRank = val;
+    document.querySelectorAll("#rank-row .filter-btn").forEach(function(b) {
+        b.className = "filter-btn";
+    });
+    var cls = val === "ALL" ? "active-rank-all" : "active-rank-" + val.toLowerCase();
+    btn.classList.add(cls);
+    renderGrid();
+}
+
+function applySearch() { renderGrid(); }
+
+// ---- ADMIN ----
+function toggleAdmin() {
+    document.getElementById("pw-input").value = "";
+    document.getElementById("pw-err").textContent = "";
+    document.getElementById("pw-overlay").classList.add("visible");
+    setTimeout(function() { document.getElementById("pw-input").focus(); }, 100);
+}
+
+function toggleAdminPanel() {
+    if (!adminUnlocked) { toggleAdmin(); return; }
+    var panel = document.getElementById("admin-panel");
+    var btn   = document.getElementById("adminToggleBtn");
+    var isOpen = panel.classList.toggle("open");
+    btn.classList.toggle("open", isOpen);
+    btn.textContent = isOpen ? "X Kapat" : "Edit Towers";
+    if (isOpen) renderAdminTable();
+}
+
+function closePasswordModal() {
+    document.getElementById("pw-overlay").classList.remove("visible");
+}
+
+function checkPassword() {
+    var val = document.getElementById("pw-input").value;
+    if (val === ADMIN_PASSWORD) {
+        adminUnlocked = true;
+        closePasswordModal();
+        // Butonu göster
+        var btn = document.getElementById("adminToggleBtn");
+        btn.classList.add("visible");
+        // Paneli aç
+        var panel = document.getElementById("admin-panel");
+        panel.classList.add("open");
+        btn.classList.add("open");
+        btn.textContent = "X Kapat";
+        renderAdminTable();
+        showToast("Admin girisi basarili!");
+    } else {
+        document.getElementById("pw-err").textContent = "Yanlis sifre, tekrar deneyin.";
+        document.getElementById("pw-input").value = "";
+        document.getElementById("pw-input").focus();
+    }
+}
+
+// ---- ADMIN TABLE ----
+function renderAdminTable() {
+    var tbody = document.getElementById("admin-tbody");
+    var tiers    = ["SSS","S","A","B","C"];
+    var rarityOpts = ["Secret","Mythic","Legendary"];
+
+    function sel(field, opts, val, idx) {
+        return "<select class='admin-select' onchange=\"updateField(" + idx + ",'" + field + "',this.value)\" style='width:90px'>"
+            + opts.map(function(o) { return "<option value='" + o + "'" + (val===o?" selected":"") + ">" + o + "</option>"; }).join("")
+            + "</select>";
+    }
+
+    tbody.innerHTML = kuleler.map(function(k, i) {
+        return "<tr>"
+            + "<td style='color:#555'>" + (i+1) + "</td>"
+            + "<td><input class='admin-input' value='" + esc(k.ad) + "' oninput=\"updateField(" + i + ",'ad',this.value)\" style='min-width:140px'></td>"
+            + "<td>" + sel("rarity", rarityOpts, k.rarity, i) + "</td>"
+            + "<td>" + sel("tier",   tiers,       k.tier,   i) + "</td>"
+            + "<td><input class='admin-input' value='" + esc(k.dps)    + "' oninput=\"updateField(" + i + ",'dps',this.value)\" style='width:75px'></td>"
+            + "<td>" + sel("dpsRank", tiers, k.dpsRank, i) + "</td>"
+            + "<td><input class='admin-input' value='" + esc(k.damage) + "' oninput=\"updateField(" + i + ",'damage',this.value)\" style='width:75px'></td>"
+            + "<td>" + sel("dmgRank", tiers, k.dmgRank, i) + "</td>"
+            + "<td><input class='admin-input' value='" + esc(k.range)  + "' oninput=\"updateField(" + i + ",'range',this.value)\" style='width:60px'></td>"
+            + "<td>" + sel("rngRank", tiers, k.rngRank, i) + "</td>"
+            + "<td><input class='admin-input' value='" + esc(k.foto)   + "' oninput=\"updateField(" + i + ",'foto',this.value)\" style='width:100px'></td>"
+            + "<td><button class='btn-del' onclick='deleteTower(" + i + ")'>Sil</button></td>"
+            + "</tr>";
+    }).join("");
+}
+
+function esc(str) {
+    return String(str).replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function updateField(index, field, value) {
+    kuleler[index][field] = value;
+    renderGrid();
+}
+
+function addTower() {
+    kuleler.push({ ad: "New Tower", rarity: "Legendary", tier: "C", dps: "???", dpsRank: "C", damage: "???", dmgRank: "C", range: "???", rngRank: "C", foto: "" });
+    renderAdminTable();
+    renderGrid();
+    var tbody = document.getElementById("admin-tbody");
+    if (tbody.lastElementChild) tbody.lastElementChild.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function deleteTower(i) {
+    kuleler.splice(i, 1);
+    renderAdminTable();
+    renderGrid();
+}
+
+function copyData() {
+    var txt = "let kuleler = " + JSON.stringify(kuleler, null, 4) + ";";
+    navigator.clipboard.writeText(txt).then(function() { showToast("Veri kopyalandi!"); });
+}
+
+function showToast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(function() { t.classList.remove("show"); }, 2500);
+}
+
+// Admin paneli gizli tutulan buton — footer'a gizli tiklama ekle
+// Sifre girmek icin footer'a 5 kez tikla
+var footerClicks = 0;
+document.addEventListener("DOMContentLoaded", function() {
+    var footer = document.querySelector("footer");
+    if (footer) {
+        footer.addEventListener("click", function() {
+            if (adminUnlocked) return;
+            footerClicks++;
+            if (footerClicks >= 5) {
+                footerClicks = 0;
+                toggleAdmin();
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>
