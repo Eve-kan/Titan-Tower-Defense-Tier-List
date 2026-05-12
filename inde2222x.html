@@ -274,7 +274,7 @@
 
 <script>
 // ============================================
-// KULE VERILERI
+// 
 // ============================================
 let kuleler = [
     { ad: "Slotman (highroller)",   rarity: "Secret",    tier: "SSS", dps: "45,000", dpsRank: "SSS", damage: "12,000", dmgRank: "SSS", range: "55", rngRank: "S",   foto: "" },
@@ -476,8 +476,6 @@ function showToast(msg) {
     setTimeout(function() { t.classList.remove("show"); }, 2500);
 }
 
-// Admin paneli gizli tutulan buton — footer'a gizli tiklama ekle
-// Sifre girmek icin footer'a 5 kez tikla
 var footerClicks = 0;
 document.addEventListener("DOMContentLoaded", function() {
     var footer = document.querySelector("footer");
